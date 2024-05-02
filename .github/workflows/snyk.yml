@@ -21,6 +21,14 @@ jobs:
         with:
           image: yuva19102003/golang-webserver:${{ github.sha }}
           args: --sarif-file-output=snyk.sarif
+          sarif: true
+
+      - name: Set Snyk Output as Environment Variable
+        run: echo "::set-env name=SNYK_OUTPUT::$(cat snyk.sarif)"
+
+      - name: Print Snyk Output
+        run: echo "$SNYK_OUTPUT"
+        
       - name: Count total number of vulnerabilities
         run: |
           RESULTS_LENGTH=$(jq '.runs[0].results | length' snyk.sarif)
