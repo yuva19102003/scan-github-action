@@ -38,6 +38,6 @@ jobs:
             fi 
       - name: Count total number of vulnerabilities
         run: |
-          OUTPUT=$(cat snyk.txt)
-          echo "OUTPUT=$OUTPUT" >> $GITHUB_ENV
-          echo $OUTPUT
+          RESULTS=$(cat snyk.txt)
+          echo "::set-output name=results::$RESULTS"
+          echo $RESULTS
