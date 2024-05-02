@@ -1,0 +1,124 @@
+
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">  
+    <title>Quote Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+<style>
+
+.header {
+	height: 100vh;
+	background: linear-gradient(45deg,#3282a6, #ff6b6b, #0000ff);
+	background-size: 400% 400%;
+	animation: animate 3s infinite alternate;
+}
+.navbar{
+	background: transparent !important;
+}
+.navbar-brand{
+	color: #fff;
+	font-family: "Bebas Neue", sans-serif;
+	font-size: 30px;
+}
+.navbar-brand:focus, 
+.navbar-brand:hover {
+	color: #fff !important;
+}
+.nav-link{
+	color: #fff;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 600;
+}
+.carousel-item {
+	margin-top: 20%;
+}
+.carousel-item h1{
+    font-size: 7em;
+	color: #fff;
+  font-family: bebas neue;
+}
+.carousel-item h2{
+	font-size: 2.2em;
+  margin-bottom: 20px;
+  color: #fff;
+  font-family: montserrat;
+  padding: 0 25%;
+  line-height: 1.5;
+}
+@keyframes animate {
+	0% {
+		background-position: 0% 50%; 
+	}
+	100% {
+		background-position: 100% 50%;
+	}
+}
+@media (min-width: 768px) and (max-width: 991px){
+    
+.navbar-nav {
+	background: #fff;
+}
+.nav-link{
+	color: #262626;
+}
+.carousel-item {
+	margin-top: 50%;
+}
+.carousel-item p {
+	padding: 0 10%;
+}
+}
+
+@media (max-width: 767px){
+	.navbar-nav {
+		background: #fff;
+	}
+	.nav-link{
+		color: #262626;
+	}
+	.carousel-item {
+		margin-top: 45%;
+	}
+	.carousel-item h1 {
+		font-size: 40px;
+	}
+	.carousel-item p {
+		font-size: 1em;
+		padding: 0 2%;
+	}
+}
+
+</style>
+
+</head>
+<body>
+    
+    <div class="header">
+        <nav class="navbar navbar-expand-lg bg-light text-center fixed-top"></nav>
+
+<div class="container">
+        <div class="row px-2">
+            <div class="col-sm-12 col-12">
+
+                <div class="carousel-item text-center active">
+                  <h1>RANDOM ANIME QUOTE GENERATOR</h1>
+                  <h2>{{ .Message }}</h2>
+                  <button id="reloadButton" class="btn btn-light text-dark">Click Here for Quote</button>
+
+                </div>
+                
+            
+       </div>
+    </div>  
+    </div>
+    <script>
+      document.getElementById("reloadButton").addEventListener("click", function() {
+          window.location.reload();
+      });
+  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
