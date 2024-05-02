@@ -35,8 +35,9 @@ jobs:
                 exit 1
             else
                 echo "Pass"
-            fi
-      - name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+            fi 
+      - name: Count total number of vulnerabilities
+        run: |
+          OUTPUT=$(cat snyk.sarif)
+          echo "OUTPUT=$OUTPUT" >> $GITHUB_ENV
+          echo $OUTPUT
