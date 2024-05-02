@@ -20,7 +20,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: yuva19102003/golang-webserver:${{ github.sha }}
-          args: --sarif-file-output=snyk.sarif >>synk.tx
+          args: --sarif-file-output=snyk.sarif >>synk.txt
         
       - name: Count total number of vulnerabilities
         run: |
@@ -38,6 +38,6 @@ jobs:
             fi 
       - name: Count total number of vulnerabilities
         run: |
-          OUTPUT=$(cat snyk.sarif)
+          OUTPUT=$(cat snyk.txt)
           echo "OUTPUT=$OUTPUT" >> $GITHUB_ENV
           echo $OUTPUT
