@@ -9,11 +9,14 @@ jobs:
     name: Build
     runs-on: ubuntu-20.04
     steps:
+    
       - name: Checkout code
         uses: actions/checkout@v2
+        
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/yuva19102003/golang-webserver:${{ github.sha }} .
+          
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
@@ -36,8 +39,24 @@ jobs:
             else
                 echo "Pass"
             fi 
-      - name: Count total number of vulnerabilities
+            
+      - name: set env for the snyk
+        id: read_results
         run: |
           RESULTS=$(cat snyk.txt)
           echo "::set-output name=results::$RESULTS"
           echo $RESULTS
+
+      - name: Send notification on Slack using Webhooks
+        uses: slackapi/slack-github-action@v1.24.0
+        if: always()
+        with:
+          payload: |
+               {
+                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ env.RESULTS_LENGTH }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Scan Results:*\n${{ steps.read_results.outputs.results }}"
+               }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
+
+
+          
