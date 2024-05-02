@@ -20,4 +20,18 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: yuva19102003/golang-webserver:${{ github.sha }}
+          args: --sarif-file-output=snyk.sarif
+      - name: Count total number of vulnerabilities
+        run: |
+          RESULTS_LENGTH=$(jq '.runs[0].results | length' snyk.sarif)
+          echo "RESULTS_LENGTH=$RESULTS_LENGTH" >> $GITHUB_ENV
+          echo $RESULTS_LENGTH
+      - name: Pass_or_Fail_the_job
+        run: |
+            if [ "$RESULTS_LENGTH" != 0 ]; then
+                echo "Job Failed"
+                exit 1
+            else
+                echo "Pass"
+            fi
     
