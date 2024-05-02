@@ -34,4 +34,14 @@ jobs:
             else
                 echo "Pass"
             fi
+      - name: Parse SARIF Output
+        id: parse-sarif-output
+        run: |
+            # Use a tool like jq to parse SARIF file into JSON format
+            JSON_OUTPUT=$(jq -c '.' snyk.sarif)
+            echo "::set-output name=json_output::$JSON_OUTPUT"
+
+      - name: Print JSON Output
+        run: echo "${{ steps.parse-sarif-output.outputs.json_output }}"
+
     
