@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     
-      
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -53,8 +53,7 @@ jobs:
                 echo "Pass"
             fi 
 
-
-      - name: increment version
+      - name: Update Version in version.txt
         run: |
           echo ${{ steps.version.outputs.version }} > version.txt
 
