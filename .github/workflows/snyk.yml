@@ -10,26 +10,39 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     
+      
       - name: Checkout code
         uses: actions/checkout@v2
+
+
+      - name: Read Version
+        id: version
+        run: |
+          version=$(($(cat version.txt)+1))
+          echo "New version: $version"
+          echo "::set-output name=version::$version"  
         
+
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/yuva19102003/golang-webserver:${{ github.sha }} .
+          docker build -t docker.io/yuva19102003/golang-webserver:${{ steps.version.outputs.version }} .
+       
           
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: yuva19102003/golang-webserver:${{ github.sha }}
+          image: yuva19102003/golang-webserver:${{ steps.version.outputs.version }}
           args: --sarif-file-output=snyk.sarif
-        
+       
+          
       - name: Count total number of vulnerabilities
         run: |
           RESULTS_LENGTH=$(jq '.runs[0].results | length' snyk.sarif)
           echo "RESULTS_LENGTH=$RESULTS_LENGTH" >> $GITHUB_ENV
           echo $RESULTS_LENGTH
+     
           
       - name: Pass_or_Fail_the_job
         run: |
@@ -39,6 +52,11 @@ jobs:
             else
                 echo "Pass"
             fi 
+
+
+      - name: increment version
+        run: |
+          echo ${{ steps.version.outputs.version }} > version.txt
 
       - name: Send notification on Slack using Webhooks
         uses: slackapi/slack-github-action@v1.24.0
