@@ -20,12 +20,13 @@ jobs:
         run: |
           version=$(($(cat version.txt)+1))
           echo "New version: $version"
+          echo $version > version.txt
           echo "::set-output name=version::$version"  
         
 
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/yuva19102003/golang-webserver:${{ steps.version.outputs.version }} .
+          docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.version }} .
        
           
       - name: Run Snyk to check Docker image for vulnerabilities
@@ -33,7 +34,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: yuva19102003/golang-webserver:${{ steps.version.outputs.version }}
+          image: yuva19102003/golang-webserver:v${{ steps.version.outputs.version }}
           args: --sarif-file-output=snyk.sarif
        
           
@@ -66,8 +67,5 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
 
 
-      - name: Update Version in version.txt
-        run: |
-          echo ${{ steps.version.outputs.version }} > version.txt
 
           
