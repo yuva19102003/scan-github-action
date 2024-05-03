@@ -39,12 +39,6 @@ jobs:
             else
                 echo "Pass"
             fi 
-            
-      - name: set env for the snyk
-        run: |
-          RESULTS=$(cat snyk.txt)
-          echo "::set-output name=results::$RESULTS" >> $GITHUB_ENV
-          echo $RESULTS
 
       - name: Send notification on Slack using Webhooks
         uses: slackapi/slack-github-action@v1.24.0
@@ -52,7 +46,7 @@ jobs:
         with:
           payload: |
                {
-                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ env.RESULTS_LENGTH }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n*Scan Results:*\n${{ env.RESULTS }}"
+                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ env.RESULTS_LENGTH }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
