@@ -8,6 +8,7 @@ on:
 
 jobs:
 
+
   docker_build:
     name: Build Docker Image
     runs-on: ubuntu-latest
@@ -53,7 +54,6 @@ jobs:
         RESULTS_LENGTH: ${{ steps.no_of_vuln.outputs.RESULTS_LENGTH }}
         JOB_STATUS: ${{ job.status }}
 
-
     steps:
 
       - name: Download Docker image
@@ -64,7 +64,6 @@ jobs:
       - name: Load Docker image
         run: |
           docker load -i image.tar
-          docker images ls
     
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
@@ -92,21 +91,44 @@ jobs:
             else 
                 echo "Pass"
             fi 
+ 
+  push_image:
+    name: Push Image to Dockerhub
+    runs-on: ubuntu-latest
+    needs: docker_build
+    outputs:
+      JOB_STATUS: ${{ job.status }}
 
+    steps:
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-image
+
+      - name: Load Docker image
+        run: |
+          docker load -i image.tar
+       
+      - name: push it to dockerhub
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}
+          
 
   slack_notify:
     name: notify in slack channel
     runs-on: ubuntu-latest
-    needs: [docker_build, snyk_scan]
+    needs: [docker_build, snyk_scan, push_image]
+    if: ${{ always() }}
     steps:
 
       - name: Send notification on Slack using Webhooks
         uses: slackapi/slack-github-action@v1.24.0
-        if: always()
         with:
           payload: |
                {
-                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}* \n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*The Snyk scan result : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n  \n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
+                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}*\n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*The Snyk scan job status : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n *Push image to Dockerhub job status : ${{ needs.docker_build.outputs.JOB_STATUS}}*\n*Docker Command : docker pull yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*Update EKS manifest job status : * \n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
