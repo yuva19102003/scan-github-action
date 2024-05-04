@@ -14,6 +14,7 @@ jobs:
     outputs:
       current_version: ${{ steps.version.outputs.current_version }}
       new_version: ${{ steps.version.outputs.new_version }}
+      JOB_STATUS: ${{ job.status }}
 
     steps:
     
@@ -50,6 +51,7 @@ jobs:
     needs: docker_build
     outputs:
         RESULTS_LENGTH: ${{ steps.no_of_vuln.outputs.RESULTS_LENGTH }}
+        JOB_STATUS: ${{ job.status }}
 
 
     steps:
@@ -104,7 +106,7 @@ jobs:
         with:
           payload: |
                {
-                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.result.job.status }}* \n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}* \n*The Snyk scan result : ${{ needs.snyk_scan.result.job.status }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
+                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}* \n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*The Snyk scan result : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n  \n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
