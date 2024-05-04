@@ -35,6 +35,7 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }} .
+          docker save -o image.tar yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }}
 
       - name: Upload Docker image
         uses: actions/upload-artifact@v2
