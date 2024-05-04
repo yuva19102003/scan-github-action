@@ -139,7 +139,7 @@ jobs:
 
     - name: Make changes to deployment.yml
       run: |
-        sed -i "s+yuva19102003/golang-webserver.*+yuva19102003/golang-webserver:v${{ needs.push_image.outputs.final_tag }}+g" frontend/deployment.yaml
+        sed -i "s+yuva19102003/golang-webserver.*+yuva19102003/golang-webserver:v${{ needs.push_image.outputs.final_tag }}+g" frontend/deployment.yml
         git add frontend/deployment.yml
         git commit -m "Update deployment configuration"
         git push origin HEAD:manifest
