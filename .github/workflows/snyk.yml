@@ -40,7 +40,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: yuva19102003/golang-webserver:v${{ steps.version.outputs.version }}
+          image: yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.version }}
           args: --sarif-file-output=snyk.sarif
        
       - name: Count total number of vulnerabilities
