@@ -49,7 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker_build
     outputs:
-        scan_results: ${{ steps.result.outputs.scan_results }}
+        RESULTS_LENGTH: ${{ steps.no_of_vuln.outputs.RESULTS_LENGTH }}
+
 
     steps:
 
@@ -72,23 +73,22 @@ jobs:
           args: --sarif-file-output=snyk.sarif
        
       - name: Count total number of vulnerabilities
+        id: no_of_vuln
         run: |
           RESULTS_LENGTH=$(jq '.runs[0].results | length' snyk.sarif)
           echo "RESULTS_LENGTH=$RESULTS_LENGTH" >> $GITHUB_ENV
           echo $RESULTS_LENGTH
+          echo "::set-output name=RESULTS_LENGTH::$RESULTS_LENGTH"
+
          
       - name: Pass_or_Fail_the_job
         id: result
         run: |
-            if [ "$RESULTS_LENGTH" != 0 ]; then
+            if [ "$RESULTS_LENGTH" != 0 ]; then         
                 echo "Job Failed"
-                scan_results=$((JOB FAILED !!!))
-                echo "::set-output name=scan_results::$scan_results"
                 exit 1
-            else
+            else 
                 echo "Pass"
-                scan_results=$((PASS))
-                echo "::set-output name=scan_results::$scan_results"
             fi 
 
 
@@ -104,7 +104,7 @@ jobs:
         with:
           payload: |
                {
-                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.scan_results }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
+                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.result.job.status }}* \n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}* \n*The Snyk scan result : ${{ needs.snyk_scan.result.job.status }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
