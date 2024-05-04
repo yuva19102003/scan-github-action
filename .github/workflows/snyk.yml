@@ -11,6 +11,9 @@ jobs:
   docker_build:
     name: Build Docker Image
     runs-on: ubuntu-latest
+    outputs:
+      current_version: ${{ steps.version.outputs.current_version }}
+      new_version: ${{ steps.version.outputs.new_version }}
 
     steps:
     
@@ -19,28 +22,37 @@ jobs:
 
       - name: Read Version
         id: version
-        run: |
-          version=$(($(cat version.txt)+1))
-          echo "New version: $version"
-          echo "::set-output name=version::$version"  
+        run: |    
+          current_version=$(($(cat version.txt)))
+          new_version=$(($(cat version.txt)+1))
+
+          echo "Current version: $current_version"
+          echo "New version: $new_version"
+          
+          echo "::set-output name=current_version::$current_version" 
+          echo "::set-output name=new_version::$new_version"  
         
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.version }} .
+          docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }} .
 
 
   snyk_scan:
     name: Snyk Scan 
     runs-on: ubuntu-latest
     needs: docker_build
+    outputs:
+        scan_results: ${{ steps.result.outputs.scan_results }}
+
     steps:
+      
     
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.version }}
+          image: yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}
           args: --sarif-file-output=snyk.sarif
        
       - name: Count total number of vulnerabilities
@@ -50,12 +62,17 @@ jobs:
           echo $RESULTS_LENGTH
          
       - name: Pass_or_Fail_the_job
+        id: result
         run: |
             if [ "$RESULTS_LENGTH" != 0 ]; then
                 echo "Job Failed"
+                scan_results=$((JOB FAILED !!!))
+                echo "::set-output name=scan_results::$scan_results"
                 exit 1
             else
                 echo "Pass"
+                scan_results=$((PASS))
+                echo "::set-output name=scan_results::$scan_results"
             fi 
 
 
@@ -71,7 +88,7 @@ jobs:
         with:
           payload: |
                {
-                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ env.RESULTS_LENGTH }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
+                 "text": "*The Snyk scan result for repo is : ${{ job.status }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.scan_results }}* \n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
