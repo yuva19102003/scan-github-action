@@ -13,45 +13,24 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     outputs:
-      new_version: ${{ steps.version.outputs.new_version }}
+      build_tag: ${{ github.sha }}
       JOB_STATUS: ${{ job.status }}
 
     steps:
     
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          ref: 'master'
-          token: ${{ secrets.TOKEN }}
 
-      - name: Read Version
-        id: version
-        run: |    
-          new_version=$(($(cat version.txt)+1))
-          echo "New version: $new_version"
-          echo "::set-output name=new_version::$new_version"
-              
       - name: Build an image from Dockerfile
         run: |
-          docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }} .
-          docker save -o image.tar yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }}
+          docker build -t docker.io/yuva19102003/golang-webserver:v${{ github.sha }} .
+          docker save -o image.tar yuva19102003/golang-webserver:v${{ github.sha }}
 
       - name: Upload Docker image
         uses: actions/upload-artifact@v2
         with:
           name: docker-image
           path: image.tar
-
-      - name: update version.txt
-        run: |
-          rm -rf image.tar
-          git config --global user.email "you@example.com"
-          git config --global user.name "GitHub Actions"
-          echo $new_version > version.txt
-          git add version.txt
-          git commit -m "Update version configuration"
-          git push origin HEAD:master
-  
 
 
   snyk_scan:
@@ -78,7 +57,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image: yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}
+          image: yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}
           args: --sarif-file-output=snyk.sarif
        
       - name: Count total number of vulnerabilities
@@ -101,7 +80,7 @@ jobs:
             
       - name: image to tar
         run: |
-          docker save -o scanimage.tar yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}
+          docker save -o scanimage.tar yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}
 
       - name: Upload Docker image
         uses: actions/upload-artifact@v2
@@ -116,7 +95,7 @@ jobs:
     needs: [docker_build, snyk_scan]
     outputs:
       JOB_STATUS: ${{ job.status }}
-      final_tag: ${{ needs.docker_build.outputs.new_version }}
+      final_tag: ${{ needs.docker_build.outputs.build_tag }}
     env:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -135,7 +114,7 @@ jobs:
       - name: push it to dockerhub
         run: |
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}
+          docker push yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}
           
 
   update_file:
@@ -178,7 +157,7 @@ jobs:
         with:
           payload: |
                {
-                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}*\n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*The Snyk scan job status : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n *Push image to Dockerhub job status : ${{ needs.docker_build.outputs.JOB_STATUS}}*\n*Docker Command : docker pull yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.new_version }}*\n\n*Update EKS manifest job status : ${{ needs.update_file.outputs.JOB_STATUS}}*\n*Mainfest Branch Commit id : ${{ needs.update_file.outputs.commit}}*\n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}*\n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}*\n\n*The Snyk scan job status : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n *Push image to Dockerhub job status : ${{ needs.docker_build.outputs.JOB_STATUS}}*\n*Docker Command : docker pull yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}*\n\n*Update EKS manifest job status : ${{ needs.update_file.outputs.JOB_STATUS}}*\n*Mainfest Branch Commit id : ${{ needs.update_file.outputs.commit}}*\n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
                }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
