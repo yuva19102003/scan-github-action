@@ -36,6 +36,12 @@ jobs:
         run: |
           docker build -t docker.io/yuva19102003/golang-webserver:v${{ steps.version.outputs.new_version }} .
 
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-image
+          path: image.tar
+
 
   snyk_scan:
     name: Snyk Scan 
@@ -45,7 +51,16 @@ jobs:
         scan_results: ${{ steps.result.outputs.scan_results }}
 
     steps:
-      
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v2
+        with:
+          name: docker-image
+
+      - name: Load Docker image
+        run: |
+          docker load -i image.tar
+          docker images ls
     
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
