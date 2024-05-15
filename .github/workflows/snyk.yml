@@ -156,9 +156,74 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
-               {
-                 "text": "*GITHUB ACTION FROM FRONTEND TIER MICROSERVICE *\n\n*The Docker Build job Status : ${{ needs.docker_build.outputs.JOB_STATUS }}*\n*The Docker image name : yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}*\n\n*The Snyk scan job status : ${{ needs.snyk_scan.outputs.JOB_STATUS }}* \n*Number of vulnerabilities : ${{ needs.snyk_scan.outputs.RESULTS_LENGTH }}*\n\n *Push image to Dockerhub job status : ${{ needs.docker_build.outputs.JOB_STATUS}}*\n*Docker Command : docker pull yuva19102003/golang-webserver:v${{ needs.docker_build.outputs.build_tag }}*\n\n*Update EKS manifest job status : ${{ needs.update_file.outputs.JOB_STATUS}}*\n*Mainfest Branch Commit id : ${{ needs.update_file.outputs.commit}}*\n\n*Detail*: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-               }
+           {
+            "attachments": [
+              {
+                "color": "#36a64f",  // Green color for success
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*:rocket: GITHUB ACTION FROM FRONTEND TIER MICROSERVICE :rocket:*"
+                    }
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Docker Build job Status:*\n`${{ needs.docker_build.outputs.JOB_STATUS }} :white_check_mark:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Docker image name:*\n`yuva19102003/backend:${{ needs.docker_build.outputs.build_tag }} :whale:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Snyk scan job status:*\n`${{ needs.snyk_scan.outputs.JOB_STATUS }} :shield:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Number of vulnerabilities:*\n`${{ needs.snyk_scan.outputs.RESULTS_LENGTH }} :bug:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Push image to Dockerhub job status:*\n`${{ needs.docker_build.outputs.JOB_STATUS }} :package:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Docker Command:*\n`docker pull yuva19102003/backend:v${{ needs.docker_build.outputs.build_tag }} :whale2:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Update EKS manifest job status:*\n`${{ needs.update_file.outputs.JOB_STATUS }} :memo:`"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "*Manifest Branch Commit id:*\n`${{ needs.update_file.outputs.commit }} :link:`"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Details:* <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View on GitHub>"
+                    }
+                  }
+                ]
+              }
+            ]
+           }
+
+            
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url }}
 
