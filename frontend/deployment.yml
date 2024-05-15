@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: web-server
-          image: yuva19102003/golang-webserver:v8c57dd2092d96417d58ca49e12f3b3efec542913
+          image: yuva19102003/golang-webserver:ve642d918b1f4de8940667d0b3ddaf9143f2b4c1a
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
